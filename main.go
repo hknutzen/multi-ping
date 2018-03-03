@@ -44,29 +44,33 @@ func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(
 			os.Stderr,
-			"Usage:\n  %s [options] filename-with-IP-addresses\n\nOptions:\n",
+			"Usage:\n  %s [options] [filename-with-IP-addresses]\n\nOptions:\n",
 			os.Args[0])
 		flag.PrintDefaults()
 	}
-	
 	flag.Parse()
-	if flag.NArg() != 1 {
-		flag.Usage()
-		return
-	}
 	if !*showUnreachable && !*showReachable {
 		*showUnreachable = true
 		*showReachable = true
 	}
-	
-	filename := flag.Arg(0)
-	content, err := ioutil.ReadFile(filename)
+
+	var data []byte
+	var err error
+	switch flag.NArg() {
+	case 0:
+		data, err = ioutil.ReadAll(os.Stdin)
+	case 1:
+		data, err = ioutil.ReadFile(flag.Arg(0))
+	default:
+		flag.Usage()
+		return
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// List of IP addresses to be pinged.
-	list := strings.Split(string(content), "\n")
+	list := strings.Split(string(data), "\n")
 	ipList := make([]net.IP, 0)
 	var hasIPv4, hasIPv6 bool
 
