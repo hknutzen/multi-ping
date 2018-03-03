@@ -1,5 +1,5 @@
 /*
-Ping multiple ip addresses in short time.
+Ping many IP addresses in short time.
 
 Coprigtht (C) 2018 Heinz Knutzen <heinz.knutzen@googlemail.com>
 
@@ -174,7 +174,7 @@ LOOP:
 func createConn (typ string) *icmp.PacketConn {
 	conn, err := icmp.ListenPacket(typ, "")
 	if err != nil {
-		log.Fatalf("%s\nCheck /proc/sys/net/ipv4/ping_group_range", err)
+		log.Fatalf("%v\nCheck /proc/sys/net/ipv4/ping_group_range", err)
 	}
 	return conn
 }
