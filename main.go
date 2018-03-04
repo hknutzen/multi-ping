@@ -37,8 +37,8 @@ import (
 )
 
 func main() {
-	delay := flag.Duration("d", time.Second, "Delay between successive pings")
-	timeout := flag.Duration("t", time.Second*3, "Timeout for response")
+	delay := flag.Duration("d", time.Millisecond*100, "Delay between successive pings")
+	timeout := flag.Duration("t", time.Second, "Timeout for response")
 	showUnreachable := flag.Bool("u", false, "Show only unreachable addresses")
 	showReachable := flag.Bool("r", false, "Show only reachable addresses")
 	flag.Usage = func() {
