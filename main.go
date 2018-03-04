@@ -124,21 +124,25 @@ func main() {
 	wait := time.NewTimer(*timeout)
 	wait.Stop()
 
+	nextPing := func (time time.Time) {
+		ip := ipList[0]
+		ipList = ipList[1:]
+		if len(ipList) == 0 {
+			ticker.Stop()
+			wait.Reset(*timeout)
+		}
+		//log.Printf("Will send: %s", ip.String())
+		sendICMP(conn4, conn6, ip)
+		ipSent[ip.String()] = time
+	}
+
+	nextPing(time.Now())
 LOOP:
 	for {
 		select {
 
 		case time := <-ticker.C:
-			// Send next ping.
-			ip := ipList[0]
-			ipList = ipList[1:]
-			if len(ipList) == 0 {
-				ticker.Stop()
-				wait.Reset(*timeout)
-			}
-			//log.Printf("Will send: %s", ip.String())
-			sendICMP(conn4, conn6, ip)
-			ipSent[ip.String()] = time
+			nextPing(time)
 
 		case addr := <-recv:
 			// Receive echo reply
