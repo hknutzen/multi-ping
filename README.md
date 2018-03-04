@@ -1,14 +1,14 @@
-Ping many IP addresses rapidly.
+### Ping many IP addresses rapidly.
 
 Uses unprivileged ICMP connection, so ``/proc/sys/net/ipv4/ping_group_range`` must be set accordingly.
 
-## ``multi-ping filename``
+### ``multi-ping filename``
 Reads IP addresses from filename.
 
-## ``multi-ping``
+### ``multi-ping``
 Reads IP addresses from STDIN
 
-## Options
+### Options
 
 ``-d duration`` Delay between successive pings. Duration is given as number followed by timeunit (s, ms, ns).
 
