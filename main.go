@@ -1,5 +1,5 @@
 /*
-Ping many IP addresses in short time.
+ping-multi -- Ping many IP addresses rapidly.
 
 Coprigtht (C) 2018 Heinz Knutzen <heinz.knutzen@googlemail.com>
 
