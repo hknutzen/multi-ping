@@ -6,7 +6,7 @@ Uses unprivileged ICMP connection, so ``/proc/sys/net/ipv4/ping_group_range`` mu
 Reads IP addresses from filename.
 
 ### ``multi-ping``
-Reads IP addresses from STDIN
+Reads IP addresses from STDIN.
 
 ### Options
 
@@ -18,6 +18,6 @@ Reads IP addresses from STDIN
 
 ``-u`` Show unreachable IP addresses line by line.
 
-If both or non of ``-r`` and ``-u`` is given, alle addresses are shown and marked "ok" or "failed" respectively.
+If both or non of ``-r`` and ``-u`` is given, all addresses are shown and marked "ok" or "failed" respectively.
 
 ``-D`` Print debug messages.
