@@ -36,6 +36,8 @@ import (
 	"golang.org/x/net/ipv6"	
 )
 
+var debug =  flag.Bool("D", false, "Show debug messages")
+
 func main() {
 	delay := flag.Duration("d", time.Millisecond*100, "Delay between successive pings")
 	timeout := flag.Duration("t", time.Second, "Timeout for response")
@@ -54,6 +56,7 @@ func main() {
 		*showReachable = true
 	}
 
+	log.SetFlags(0)	// Don't log date & time
 	var data []byte
 	var err error
 	switch flag.NArg() {
@@ -131,7 +134,7 @@ func main() {
 			ticker.Stop()
 			wait.Reset(*timeout)
 		}
-		//log.Printf("Will send: %s", ip.String())
+		debugf("Sending: %s", ip.String())
 		sendICMP(conn4, conn6, ip)
 		ipSent[ip.String()] = time
 	}
@@ -146,7 +149,7 @@ LOOP:
 
 		case addr := <-recv:
 			// Receive echo reply
-			//log.Printf("Received: %s", addr)
+			debugf("Received: %s", addr)
 			if start, found := ipSent[addr]; found {
 				if *timeout >= time.Now().Sub(start) {
 
@@ -157,7 +160,7 @@ LOOP:
 
 		case <-wait.C:
 			// Wait after last echo has been sent.
-			//log.Println("Timeout finished")
+			debugf("Timeout finished")
 			break LOOP
 		}
 	}
@@ -226,4 +229,10 @@ func sendICMP (conn4, conn6 *icmp.PacketConn, ip net.IP) {
 
 	// Ignore errors, destination will simply be unreachable.
 	_, _ = conn.WriteTo(bytes, dst)
+}
+
+func debugf (f string, v ...interface{}) {
+	if *debug {
+		log.Printf(f, v...)
+	}
 }
