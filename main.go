@@ -1,7 +1,7 @@
 /*
 ping-multi -- Ping many IP addresses rapidly.
 
-Coprigtht (C) 2018 Heinz Knutzen <heinz.knutzen@googlemail.com>
+Coprigtht (C) 2022 Heinz Knutzen <heinz.knutzen@googlemail.com>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -32,11 +32,11 @@ import (
 	"time"
 
 	"golang.org/x/net/icmp"
-	"golang.org/x/net/ipv4"	
-	"golang.org/x/net/ipv6"	
+	"golang.org/x/net/ipv4"
+	"golang.org/x/net/ipv6"
 )
 
-var debug =  flag.Bool("D", false, "Show debug messages")
+var debug = flag.Bool("D", false, "Show debug messages")
 
 func main() {
 	delay := flag.Duration("d", time.Millisecond*100, "Delay between successive pings")
@@ -56,7 +56,7 @@ func main() {
 		*showReachable = true
 	}
 
-	log.SetFlags(0)	// Don't log date & time
+	log.SetFlags(0) // Don't log date & time
 	var data []byte
 	var err error
 	switch flag.NArg() {
@@ -94,16 +94,16 @@ func main() {
 			hasIPv4 = true
 		} else {
 			hasIPv6 = true
-		}		
+		}
 	}
-	
+
 	if len(ipList) == 0 {
 		return
 	}
 
 	// Remember full list for showing also reachable addresses in result.
 	fullList := ipList
-	
+
 	// Remember time when each ping to address was sent.
 	// Entries will be deleted, if echo reply is received in time.
 	// So in the end this holds only unreplied addresses.
@@ -119,7 +119,7 @@ func main() {
 		conn6 = createConn("udp6")
 		go recvICMP(conn6, recv)
 	}
-	
+
 	// Send packets with this delay.
 	ticker := time.NewTicker(*delay)
 
@@ -127,7 +127,7 @@ func main() {
 	wait := time.NewTimer(*timeout)
 	wait.Stop()
 
-	nextPing := func (time time.Time) {
+	nextPing := func(time time.Time) {
 		ip := ipList[0]
 		ipList = ipList[1:]
 		if len(ipList) == 0 {
@@ -145,6 +145,10 @@ LOOP:
 		select {
 
 		case time := <-ticker.C:
+			if len(ipList) == 0 {
+				debugf("Ignoring excess ticker event")
+				continue
+			}
 			nextPing(time)
 
 		case addr := <-recv:
@@ -176,13 +180,13 @@ LOOP:
 			}
 			fmt.Printf("%s\t%s\n", addr, what)
 		} else if *showUnreachable && unreachable ||
-			*showReachable && ! unreachable {
+			*showReachable && !unreachable {
 			fmt.Println(addr)
 		}
 	}
 }
 
-func createConn (typ string) *icmp.PacketConn {
+func createConn(typ string) *icmp.PacketConn {
 	conn, err := icmp.ListenPacket(typ, "")
 	if err != nil {
 		log.Fatalf("%v\nCheck /proc/sys/net/ipv4/ping_group_range", err)
@@ -190,11 +194,11 @@ func createConn (typ string) *icmp.PacketConn {
 	return conn
 }
 
-func recvICMP (conn *icmp.PacketConn, recv chan<- string) {
+func recvICMP(conn *icmp.PacketConn, recv chan<- string) {
 	bytes := make([]byte, 512)
 	for {
 		_, remoteAddr, err := conn.ReadFrom(bytes)
-		if (err != nil) {
+		if err != nil {
 			panic(err)
 		}
 		if addr, ok := remoteAddr.(*net.UDPAddr); ok {
@@ -205,7 +209,7 @@ func recvICMP (conn *icmp.PacketConn, recv chan<- string) {
 	}
 }
 
-func sendICMP (conn4, conn6 *icmp.PacketConn, ip net.IP) {
+func sendICMP(conn4, conn6 *icmp.PacketConn, ip net.IP) {
 	dst := &net.UDPAddr{IP: ip}
 	var typ icmp.Type
 	var conn *icmp.PacketConn
@@ -219,8 +223,8 @@ func sendICMP (conn4, conn6 *icmp.PacketConn, ip net.IP) {
 	bytes, err := (&icmp.Message{
 		Type: typ, Code: 0,
 		Body: &icmp.Echo{
-			ID:   rand.Intn(65535),
-			Seq:  1,
+			ID:  rand.Intn(65535),
+			Seq: 1,
 		},
 	}).Marshal(nil)
 	if err != nil {
@@ -231,7 +235,7 @@ func sendICMP (conn4, conn6 *icmp.PacketConn, ip net.IP) {
 	_, _ = conn.WriteTo(bytes, dst)
 }
 
-func debugf (f string, v ...interface{}) {
+func debugf(f string, v ...interface{}) {
 	if *debug {
 		log.Printf(f, v...)
 	}
