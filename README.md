@@ -1,5 +1,12 @@
 ### Ping many IP addresses rapidly.
 
+IP is
+- IP address, e.g. 1.2.3.4
+- IP prefix, e.g. 1.2.3.0/24
+- IP range, e.g. 1.2.3.4-1.2.3.42
+
+Both v4 and v6 addresses are accepted.
+
 Uses unprivileged ICMP connection, so ``/proc/sys/net/ipv4/ping_group_range`` must be set accordingly.
 
 ### ``multi-ping filename``

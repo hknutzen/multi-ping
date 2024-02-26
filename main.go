@@ -1,7 +1,7 @@
 /*
 ping-multi -- Ping many IP addresses rapidly.
 
-Coprigtht (C) 2022 Heinz Knutzen <heinz.knutzen@googlemail.com>
+Coprigtht (C) 2024 Heinz Knutzen <heinz.knutzen@googlemail.com>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -27,10 +27,12 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"net/netip"
 	"os"
 	"strings"
 	"time"
 
+	"go4.org/netipx"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
@@ -74,7 +76,7 @@ func main() {
 
 	// List of IP addresses to be pinged.
 	list := strings.Split(string(data), "\n")
-	ipList := make([]net.IP, 0)
+	ipList := make([]netip.Addr, 0)
 	var hasIPv4, hasIPv6 bool
 
 	// Remove leading and trailing white space and empty lines.
@@ -84,13 +86,21 @@ func main() {
 		if line == "" {
 			continue
 		}
-		ip := net.ParseIP(line)
-		if ip == nil {
+		var rg netipx.IPRange
+		if ip, err := netip.ParseAddr(line); err == nil {
+			rg = netipx.IPRangeFrom(ip, ip)
+		} else if ipp, err := netip.ParsePrefix(line); err == nil {
+			rg = netipx.RangeOfPrefix(ipp)
+		} else if ipr, err := netipx.ParseIPRange(line); err == nil {
+			rg = ipr
+		} else {
 			log.Printf("Ignoring invalid IP '%s'", line)
 			continue
 		}
-		ipList = append(ipList, ip)
-		if ip.To4() != nil {
+		for ip := rg.From(); ip != rg.To(); ip = ip.Next() {
+			ipList = append(ipList, ip)
+		}
+		if rg.From().Is4() {
 			hasIPv4 = true
 		} else {
 			hasIPv6 = true
@@ -209,11 +219,11 @@ func recvICMP(conn *icmp.PacketConn, recv chan<- string) {
 	}
 }
 
-func sendICMP(conn4, conn6 *icmp.PacketConn, ip net.IP) {
-	dst := &net.UDPAddr{IP: ip}
+func sendICMP(conn4, conn6 *icmp.PacketConn, ip netip.Addr) {
+	dst := &net.UDPAddr{IP: ip.AsSlice()}
 	var typ icmp.Type
 	var conn *icmp.PacketConn
-	if ip.To4() != nil {
+	if ip.Is4() {
 		typ = ipv4.ICMPTypeEcho
 		conn = conn4
 	} else {
